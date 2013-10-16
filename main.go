@@ -8,8 +8,9 @@ import (
 )
 
 const (
-  living = 'O'
-  dead   = ' '
+  living    = 'O'
+  dead      = ' '
+  framerate = 8
 )
 
 type universe struct {
@@ -21,18 +22,13 @@ type universe struct {
 func loadFromFile(path string) (u* universe, err error) {
   body, err := readLines(path)
   if err != nil {
-    // TODO: make new err
     return nil, err
   }
 
-  // Find size
   rows := len(body)
   cols := len(body[0])
 
-  fmt.Printf("rows: %d, cols: %d", rows, cols)
-
-  u = &universe{Width: cols, Height: rows}
-  u.Space = newSpaceArray(rows, cols)
+  u = &universe{Width: cols, Height: rows, Space: newSpaceArray(rows, cols)}
 
   for i := range body {
     for j, e := range body[i] {
@@ -98,7 +94,7 @@ func (self *universe) Clone() universe {
 }
 
 func main() {
-  u, err := loadFromFile("maps/glider_gun.txt")
+  u, err := loadFromFile("maps/pulsar.txt")
   nxGen := u.Clone()
 
   if err != nil {
@@ -126,6 +122,6 @@ func main() {
       }
     }
     u.Space, nxGen.Space = nxGen.Space, u.Space
-    time.Sleep(time.Second / 10)
+    time.Sleep(time.Second / framerate)
   }
 }
