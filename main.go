@@ -9,12 +9,8 @@ import (
 
 const (
   living = 'O'
+  dead   = ' '
 )
-
-//w := 79
-//h := 15
-
-//type universe [h][w]byte
 
 type universe struct {
   Width int
@@ -35,13 +31,13 @@ func loadFromFile(path string) (u* universe, err error) {
 
   fmt.Printf("rows: %d, cols: %d", rows, cols)
 
-  u = &universe{Width: rows, Height: cols}
+  u = &universe{Width: cols, Height: rows}
   u.Space = newSpaceArray(rows, cols)
 
   for i := range body {
-    for j, e := range body[0] {
+    for j, e := range body[i] {
       if e == 'X' {
-        u.Space[j][i] = living
+        u.Space[i][j] = living
       }
     }
   }
@@ -90,15 +86,15 @@ func neighbors(u *universe, x, y int) (n int) {
 }
 
 func newSpaceArray(rows, cols int) [][]byte {
-  ar := make([][]byte, cols)
+  ar := make([][]byte, rows)
   for i := range ar {
-    ar[i] = make([]byte, rows)
+    ar[i] = make([]byte, cols)
   }
   return ar
 }
 
 func (self *universe) Clone() universe {
-  return universe{Width: self.Width, Height: self.Height, Space: newSpaceArray(self.Width, self.Height)}
+  return universe{Width: self.Width, Height: self.Height, Space: newSpaceArray(self.Height, self.Width)}
 }
 
 func main() {
@@ -117,15 +113,15 @@ func main() {
         live := u.Space[y][x] == living
         switch n := neighbors(u, x, y); {
         case live && n < 2:
-          nxGen.Space[y][x] = 0
+          nxGen.Space[y][x] = dead
         case live && (n == 2 || n == 3):
           nxGen.Space[y][x] = living
         case live && n > 3:
-          nxGen.Space[y][x] = 0
+          nxGen.Space[y][x] = dead
         case !live && n == 3:
           nxGen.Space[y][x] = living
         default:
-          nxGen.Space[y][x] = 0
+          nxGen.Space[y][x] = dead
         }
       }
     }
