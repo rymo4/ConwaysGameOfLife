@@ -10,7 +10,8 @@ import (
 const (
   living    = 'O'
   dead      = ' '
-  framerate = 8
+  blankMarker = '.'
+  framerate = 10
 )
 
 type universe struct {
@@ -32,7 +33,7 @@ func loadFromFile(path string) (u* universe, err error) {
 
   for i := range body {
     for j, e := range body[i] {
-      if e == 'X' {
+      if e != blankMarker {
         u.Space[i][j] = living
       }
     }
@@ -55,19 +56,19 @@ func readLines(path string) ([]string, error) {
   return lines, scanner.Err()
 }
 
-func show(u *universe) {
+func (u *universe) Show() {
   fmt.Print("\x0c")
   for _, r := range u.Space {
     for i, b := range r {
       if b == 0 {
-        r[i] = ' '
+        r[i] = dead
       }
     }
     fmt.Println(string(r[:]))
   }
 }
 
-func neighbors(u *universe, x, y int) (n int) {
+func (u *universe) neighbors(x, y int) (n int) {
   for dx := -1; dx < 2; dx++ {
     for dy := -1; dy < 2; dy++ {
       xx, yy := x+dx, y+dy
@@ -94,7 +95,7 @@ func (self *universe) Clone() universe {
 }
 
 func main() {
-  u, err := loadFromFile("maps/pulsar.txt")
+  u, err := loadFromFile("maps/glider_gun.txt")
   nxGen := u.Clone()
 
   if err != nil {
@@ -103,11 +104,11 @@ func main() {
   }
 
   for i := 0; i < 300; i++ {
-    show(u)
+    u.Show()
     for y := range u.Space {
       for x := range u.Space[0] {
         live := u.Space[y][x] == living
-        switch n := neighbors(u, x, y); {
+        switch n := u.neighbors(x, y); {
         case live && n < 2:
           nxGen.Space[y][x] = dead
         case live && (n == 2 || n == 3):
