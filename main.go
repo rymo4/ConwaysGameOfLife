@@ -12,14 +12,16 @@ const (
 
 func main() {
   u, err := universe.LoadFromFile("maps/glider_gun.txt")
+  u.AtGeneration(100);
+
+  if err != nil {
+    fmt.Printf("Please provide a valid file")
+    return
+  }
 
   for {
     time.Sleep(time.Second / framerate)
     u.Next()
     u.Show()
-  }
-  if err != nil {
-    fmt.Printf("Please provide a valid file")
-    return
   }
 }

@@ -9,7 +9,6 @@ const (
   living    = 'O'
   dead      = ' '
   blankMarker = '.'
-  framerate = 10
 )
 
 type Universe struct {
@@ -32,7 +31,8 @@ func (u *Universe) Show() {
   }
 }
 
-func (u *Universe) neighbors(x, y int) (n int) {
+func (u *Universe) NeighborsCount(x, y int) int {
+  n := 0
   for dx := -1; dx < 2; dx++ {
     for dy := -1; dy < 2; dy++ {
       xx, yy := x+dx, y+dy
@@ -43,7 +43,7 @@ func (u *Universe) neighbors(x, y int) (n int) {
       }
     }
   }
-  return
+  return n
 }
 
 func (self *Universe) Clone() Universe {
@@ -64,7 +64,7 @@ func (u *Universe) Next() {
   for y := range u.Space {
     for x := range u.Space[0] {
       live := u.Space[y][x] == living
-      switch n := u.neighbors(x, y); {
+      switch n := u.NeighborsCount(x, y); {
       case live && n < 2:
         nxGen.Space[y][x] = dead
       case live && (n == 2 || n == 3):
@@ -79,6 +79,7 @@ func (u *Universe) Next() {
     }
   }
   u.Space, nxGen.Space = nxGen.Space, u.Space
+  u.generation++
 }
 
 func LoadFromFile(path string) (u* Universe, err error) {
