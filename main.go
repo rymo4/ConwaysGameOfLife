@@ -34,6 +34,8 @@ func main() {
     serveHaml(w, "web/views/index.haml")
   })
 
+  http.Handle("/static/",  http.StripPrefix("/static/", http.FileServer(http.Dir("./web/"))))
+
   log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
