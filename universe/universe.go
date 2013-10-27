@@ -86,7 +86,7 @@ func (u *Universe) Next() {
 }
 
 func LoadFromFile(path string) (u *Universe, err error) {
-	body, err := readLines(path)
+	body, err := ReadLines(path)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func newSpaceArray(rows, cols int) [][]byte {
 	return ar
 }
 
-func readLines(path string) ([]string, error) {
+func ReadLines(path string) ([]string, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
