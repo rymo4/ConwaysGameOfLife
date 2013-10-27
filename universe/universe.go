@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-  "strconv"
-  "strings"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -54,7 +54,7 @@ func New(width, height int) *Universe {
 		Width:  width,
 		Height: height,
 		Space:  newSpaceArray(height, width),
-  }
+	}
 }
 
 func (self *Universe) Clone() Universe {
@@ -125,40 +125,38 @@ func newSpaceArray(rows, cols int) [][]byte {
 }
 
 func LoadFromCanonicalString(state string) *Universe {
-  parts := strings.Split(state, "|")
-  mapSize := strings.Split(parts[0], ",")
-  livingCells := strings.Split(parts[1], ",")
+	parts := strings.Split(state, "|")
+	mapSize := strings.Split(parts[0], ",")
+	livingCells := strings.Split(parts[1], ",")
 
-  //TODO: handle errors
-  width, _ := strconv.ParseInt(mapSize[0],10,0)
-  height, _ := strconv.ParseInt(mapSize[1],10,0)
+	//TODO: handle errors
+	width, _ := strconv.ParseInt(mapSize[0], 10, 0)
+	height, _ := strconv.ParseInt(mapSize[1], 10, 0)
 
-  uni := New(int(width), int(height))
-  for i := 0 ; i < len(livingCells)/2 ; i++ {
-    xIndex := i*2
-    yIndex := xIndex + 1
+	uni := New(int(width), int(height))
+	for i := 0; i < len(livingCells)/2; i++ {
+		xIndex := i * 2
+		yIndex := xIndex + 1
 
-    x, _ := strconv.ParseInt(livingCells[xIndex],10,0)
-    y, _ := strconv.ParseInt(livingCells[yIndex],10,0)
+		x, _ := strconv.ParseInt(livingCells[xIndex], 10, 0)
+		y, _ := strconv.ParseInt(livingCells[yIndex], 10, 0)
 
-    uni.Space[y][x] = living
-  }
-  return uni
+		uni.Space[y][x] = living
+	}
+	return uni
 }
 
 func (u *Universe) CanonicalString() string {
-  state := fmt.Sprintf("%d,%d|", u.Width, u.Height)
-  for i, r := range u.Space {
-    for j, b := range r {
-      if b == living {
-        state = fmt.Sprintf("%s%d,%d,", state, i, j)
-      }
-    }
-  }
-  return state
+	state := fmt.Sprintf("%d,%d|", u.Width, u.Height)
+	for i, r := range u.Space {
+		for j, b := range r {
+			if b == living {
+				state = fmt.Sprintf("%s%d,%d,", state, i, j)
+			}
+		}
+	}
+	return state
 }
-
-
 
 func readLines(path string) ([]string, error) {
 	file, err := os.Open(path)
