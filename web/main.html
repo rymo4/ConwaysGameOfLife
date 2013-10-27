@@ -8,12 +8,22 @@
   </head>
   <body>
     <span ng-controller="LifeCtrl">
-      <div class="main" ng-click="bye = 'goodbye'">
+      <div class="main" ng-init="initMap(50, 50)" ng-click="bye = 'goodbye'">
       </div>
       <div>
         Two times <input ng-model="num"> equals {{ double(num) }}
       </div>
       <p>{{bye}}</p>
+      <ul class="columns">
+        <li class="col" ng-repeat="col in map">
+          <ul>
+            <li class="cell" ng-repeat="row in map[$index]" ng-init="elem = getElem($index, $parent.$index)">
+              <img ng-show="elem" ng-src="./images/{{elem}}"></img>
+              <div ng-hide="elem"></div>
+            </li>
+          </ul>
+        </li>
+      </ul>
     </span>
   </body>
 </html>
