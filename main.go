@@ -17,7 +17,6 @@ const (
 // width,height|i1,j1,i2,j2....
 // where i = col # for a living cell
 // and j = row # for living cell
-
 func main() {
 	log.Print("Starting webserver.")
 
