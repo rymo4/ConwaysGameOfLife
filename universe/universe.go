@@ -163,7 +163,7 @@ func (u *Universe) CanonicalString() string {
 	for i, r := range u.Space {
 		for j, _ := range r {
 			if u.IsLiving(i, j) {
-				state = fmt.Sprintf("%s%d,%d,", state, i, j)
+				state = fmt.Sprintf("%s%d,%d,", state, j, i)
 			}
 		}
 	}
