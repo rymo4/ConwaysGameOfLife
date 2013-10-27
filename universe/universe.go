@@ -22,6 +22,18 @@ type Universe struct {
 	initialState string
 }
 
+func (u *Universe) IsLiving(y, x int) bool {
+  return u.Space[y][x] == living
+}
+
+func (u *Universe) SetLiving(y, x int, alive bool) {
+  if alive {
+    u.Space[y][x] = living
+  } else {
+    u.Space[y][x] = dead
+  }
+}
+
 func (u *Universe) Show() {
 	fmt.Print("\x0c")
 	for _, r := range u.Space {
@@ -41,7 +53,7 @@ func (u *Universe) NeighborsCount(x, y int) int {
 			xx, yy := x+dx, y+dy
 			if (dx != 0 || dy != 0) &&
 				xx >= 0 && xx < u.Width &&
-				yy >= 0 && yy < u.Height && u.Space[yy][xx] == living {
+				yy >= 0 && yy < u.Height && u.IsLiving(yy, xx) {
 				n++
 			}
 		}
@@ -149,8 +161,8 @@ func LoadFromCanonicalString(state string) *Universe {
 func (u *Universe) CanonicalString() string {
 	state := fmt.Sprintf("%d,%d|", u.Width, u.Height)
 	for i, r := range u.Space {
-		for j, b := range r {
-			if b == living {
+		for j, _ := range r {
+			if u.IsLiving(i, j) {
 				state = fmt.Sprintf("%s%d,%d,", state, i, j)
 			}
 		}
