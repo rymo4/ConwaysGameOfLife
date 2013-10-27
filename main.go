@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"github.com/rymo4/life/universe"
-  "github.com/realistschuckle/gohaml"
   "net/http"
   //"net/url"
   "io/ioutil"
+  "io"
   "log"
 )
 
@@ -31,24 +31,22 @@ func main() {
   })
 
   http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-    serveHaml(w, "web/views/index.haml")
+    serveHTML(w, "./web/main.html")
   })
+
+  http.Handle("/static/",  http.StripPrefix("/static/", http.FileServer(http.Dir("./web/"))))
 
   log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func serveHaml(w http.ResponseWriter, filename string) {
-  var scope = make(map[string]interface{})
-  scope["lang"] = "HAML"
+func serveHTML(w http.ResponseWriter, filename string) {
 
   content, err := ioutil.ReadFile(filename)
   if err != nil {
     // TODO: serve error
+    fmt.Printf("Cannot find %s\n", filename);
     return
   }
 
-  // TODO: serve error
-  engine, _ := gohaml.NewEngine(string(content))
-  output := engine.Render(scope)
-  fmt.Println(w, output)
+  io.WriteString(w, string(content))
 }
