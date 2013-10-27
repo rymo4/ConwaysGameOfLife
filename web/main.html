@@ -8,7 +8,7 @@
   </head>
   <body>
     <span ng-controller="LifeCtrl">
-      <div class="main" ng-init="initMap(50, 50)" ng-click="bye = 'goodbye'">
+      <div class="main" ng-init="initMap(100, 100)" ng-click="nextGen();">
       </div>
       <div>
         Two times <input ng-model="num"> equals {{ double(num) }}
@@ -18,7 +18,7 @@
         <li class="col" ng-repeat="col in map">
           <ul>
             <li class="cell" ng-repeat="row in map[$index]" ng-init="elem = getElem($index, $parent.$index)">
-              <img ng-show="elem" ng-src="./images/{{elem}}"></img>
+              <img ng-show="elem" ng-src="/static/images/{{elem}}"></img>
               <div ng-hide="elem"></div>
             </li>
           </ul>
