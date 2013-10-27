@@ -6,6 +6,7 @@ import (
   "github.com/realistschuckle/gohaml"
   "net/http"
   //"net/url"
+  "io/ioutil"
   "log"
 )
 
@@ -23,9 +24,9 @@ func main() {
       fmt.Printf("Please provide a valid file")
       return
     }
-    vals := r.URL.Query
-    fmt.Printf("%s", vals.Get("gen"))
-    fmt.Fprintf(w, "%s", vals.Get("gen"))
+    //vals := r.URL.Query
+    //fmt.Printf("%s", vals.Get("gen"))
+    //fmt.Fprintf(w, "%s", vals.Get("gen"))
     u.Next()
   })
 
@@ -40,14 +41,14 @@ func serveHaml(w http.ResponseWriter, filename string) {
   var scope = make(map[string]interface{})
   scope["lang"] = "HAML"
 
-  content, err := universe.readLines(filename)
+  content, err := ioutil.ReadFile(filename)
   if err != nil {
     // TODO: serve error
     return
   }
 
   // TODO: serve error
-  engine, _ := gohaml.NewEngine(content)
+  engine, _ := gohaml.NewEngine(string(content))
   output := engine.Render(scope)
   fmt.Println(w, output)
 }
