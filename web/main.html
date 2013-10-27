@@ -2,24 +2,24 @@
 <html ng-app="Conways">
   <head>
     <title>Game of Life</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.2/angular.min.js"></script>
     <script src="/static/js/life.js"></script>
     <link rel="stylesheet" type="text/css" href="/static/css/map.css">
   </head>
   <body>
     <span ng-controller="LifeCtrl">
-      <div class="main" ng-init="initMap(100, 100)" ng-click="nextGen();">
+      <div class="main" ng-init="initMap(50, 50)" ng-click="loop();">
       </div>
       <div>
         Two times <input ng-model="num"> equals {{ double(num) }}
       </div>
-      <p>{{bye}}</p>
+
       <ul class="columns">
-        <li class="col" ng-repeat="col in map">
+        <li class="col" ng-repeat="col in map_size">
           <ul>
-            <li class="cell" ng-repeat="row in map[$index]" ng-init="elem = getElem($index, $parent.$index)">
-              <img ng-show="elem" ng-src="/static/images/{{elem}}"></img>
-              <div ng-hide="elem"></div>
+            <li class="cell" ng-repeat="row in map_size[$index]">
+              <img id="{{$index}}-{{$parent.$index}}"></img>
             </li>
           </ul>
         </li>
