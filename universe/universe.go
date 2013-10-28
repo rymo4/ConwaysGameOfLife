@@ -25,28 +25,28 @@ type Universe struct {
 }
 
 func (u *Universe) IsLiving(y, x int) bool {
-  return u.Space[toKey(y,x)] == living
+	return u.Space[toKey(y, x)] == living
 }
 
 func (u *Universe) SetLiving(y, x int, alive bool) {
-  key := toKey(y, x)
-  if alive {
-    u.Space[key] = living
-  } else {
-    delete(u.Space, key)
-  }
+	key := toKey(y, x)
+	if alive {
+		u.Space[key] = living
+	} else {
+		delete(u.Space, key)
+	}
 }
 
 func toKey(y, x int) string {
-  return fmt.Sprintf("%d-%d", y, x)
+	return fmt.Sprintf("%d-%d", y, x)
 }
 
-func CoordsFromKey(key string) (y, x int){
-  parts := strings.Split(key, "-")
-  y_, _ := strconv.ParseInt(parts[0],10,0)
-  x_, _ := strconv.ParseInt(parts[1],10,0)
-  x, y = int(x_), int(y_)
-  return
+func CoordsFromKey(key string) (y, x int) {
+	parts := strings.Split(key, "-")
+	y_, _ := strconv.ParseInt(parts[0], 10, 0)
+	x_, _ := strconv.ParseInt(parts[1], 10, 0)
+	x, y = int(x_), int(y_)
+	return
 }
 
 //func (u *Universe) Show() {
@@ -80,7 +80,7 @@ func New(width, height int) *Universe {
 	return &Universe{
 		Width:  width,
 		Height: height,
-		Space: make(grid),
+		Space:  make(grid),
 	}
 }
 
@@ -101,28 +101,28 @@ func (u *Universe) AtGeneration(gen int) {
 
 func (u *Universe) Next() {
 	nxGen := u.Clone()
-  for key := range u.Space {
-    yCenter, xCenter := CoordsFromKey(key)
-    for y_ := -1; y_ < 2; y_++ {
-      for x_ := -1; x_ < 2; x_++ {
-        y := y_ + yCenter
-        x := x_ + xCenter
-        live := u.IsLiving(y, x)
-        switch n := u.NeighborsCount(y, x); {
-        case live && n < 2:
-          nxGen.SetLiving(y, x, false)
-        case live && (n == 2 || n == 3):
-          nxGen.SetLiving(y, x, true)
-        case live && n > 3:
-          nxGen.SetLiving(y, x, false)
-        case !live && n == 3:
-          nxGen.SetLiving(y, x, true)
-        default:
-          nxGen.SetLiving(y, x, false)
-        }
-      }
-    }
-  }
+	for key := range u.Space {
+		yCenter, xCenter := CoordsFromKey(key)
+		for y_ := -1; y_ < 2; y_++ {
+			for x_ := -1; x_ < 2; x_++ {
+				y := y_ + yCenter
+				x := x_ + xCenter
+				live := u.IsLiving(y, x)
+				switch n := u.NeighborsCount(y, x); {
+				case live && n < 2:
+					nxGen.SetLiving(y, x, false)
+				case live && (n == 2 || n == 3):
+					nxGen.SetLiving(y, x, true)
+				case live && n > 3:
+					nxGen.SetLiving(y, x, false)
+				case !live && n == 3:
+					nxGen.SetLiving(y, x, true)
+				default:
+					nxGen.SetLiving(y, x, false)
+				}
+			}
+		}
+	}
 	u.Space, nxGen.Space = nxGen.Space, u.Space
 	u.generation++
 }
@@ -136,7 +136,7 @@ func LoadFromFile(path string) (u *Universe, err error) {
 	rows := len(body)
 	cols := len(body[0])
 
-	u = &Universe{Width: cols, Height: rows, Space: make(grid) }
+	u = &Universe{Width: cols, Height: rows, Space: make(grid)}
 
 	for i := range body {
 		for j, e := range body[i] {
@@ -172,12 +172,12 @@ func LoadFromCanonicalString(state string) *Universe {
 
 func (u *Universe) CanonicalString() string {
 	state := fmt.Sprintf("%d,%d|", u.Width, u.Height)
-  for key := range u.Space {
-    i, j := CoordsFromKey(key)
-    if u.IsLiving(i, j) {
-      state = fmt.Sprintf("%s%d,%d,", state, j, i)
-    }
-  }
+	for key := range u.Space {
+		i, j := CoordsFromKey(key)
+		if u.IsLiving(i, j) {
+			state = fmt.Sprintf("%s%d,%d,", state, j, i)
+		}
+	}
 	return state
 }
 
