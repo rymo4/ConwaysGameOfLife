@@ -7,6 +7,8 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
     $scope.n_columns = 0;
     $scope.canonical = 0;
     $scope.board = "";
+    $scope.alive = [];
+    $scope.prev = [];
     var ALIVE = 1;
     var DEAD = 0;
 
@@ -43,32 +45,69 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
       var n_columns = parseInt(size[0]);
       var n_rows = parseInt(size[1]);
       var elems = t[1];
-      elems = elems.split(',');
+      $scope.alive = elems.split(',');
 
-      // INITIALIZE AN EMPTY GRIDs
-      var map = Array($scope.n_columns);
-      for (var col = 0; col < $scope.n_columns; col++) {
-        map[col] = new Array($scope.n_rows);
-        for (var row = 0; row < $scope.n_rows; row++) {
-            map[col][row] = DEAD;
-            var elem = document.getElementById(col + '-' + row); 
-            elem.setAttribute('class', 'dead');
-        }
-      } 
-      //LOOP THROUGH THE COMPUTED ALIVE AND ADD THEM TO MAP
-      for (var i=0; i<elems.length-1; i=i+2) {
-        var col = parseInt(elems[i]);
-        var row = parseInt(elems[i+1]);
-        map[col][row] = ALIVE;
-        var elem = document.getElementById(col + '-' + row); 
-        elem.setAttribute('class', 'alive');
+      // KILL OF ALIVE CELLS FROM PREV
+      //var map = Array($scope.n_columns);
+      // for (var col = 0; col < $scope.n_columns; col++) {
+      //   map[col] = new Array($scope.n_rows);
+      //   for (var row = 0; row < $scope.n_rows; row++) {
+      //       map[col][row] = DEAD;
+      //       var elem = document.getElementById(col + '-' + row); 
+      //       elem.setAttribute('class', 'cell dead');
+      //   }
+      // } 
+      var map = document.getElementById('map');
+      var insertFunction = removeToInsertLater(map);
+      for (var i=0; i< $scope.prev.length-1; i=i+2) {
+        var col = parseInt($scope.prev[i]);
+        var row = parseInt($scope.prev[i+1]);
+        $scope.map[col][row] = DEAD;
+        var elem = map.querySelector('li[id="' + col + '-' + row + '"]'); 
+        elem.className = 'cell dead';
       }
+      //LOOP THROUGH THE COMPUTED ALIVE AND ADD THEM TO MAP
+      for (var i=0; i<$scope.alive.length-1; i=i+2) {
+        var col = parseInt($scope.alive[i]);
+        var row = parseInt($scope.alive[i+1]);
+        $scope.map[col][row] = ALIVE;
+        var elem = map.querySelector('li[id="' + col + '-' + row + '"]');
+        elem.className = 'cell alive';
+      }
+      insertFunction();
+      $scope.prev = $scope.alive;
       //$scope.n_columns = n_columns;
       //$scope.n_rows = n_rows;
-      $scope.map = map;
+      //$scope.map = map;
+    }
+
+  
+    /**
+     * Remove an element and provide a function that inserts it into its original position
+     * @param element {Element} The element to be temporarily removed
+     * @return {Function} A function that inserts the element into its original position
+     **/
+    function removeToInsertLater(element) {
+      var parentNode = element.parentNode;
+      var nextSibling = element.nextSibling;
+      parentNode.removeChild(element);
+      return function() {
+        if (nextSibling) {
+          parentNode.insertBefore(element, nextSibling);
+        } else {
+          parentNode.appendChild(element);
+        }
+      };
     }
 
     $scope.loop = function() {
+      //Reset the trail back to zero
+      for (var col = 0; col < $scope.n_columns; col++) {
+        for (var row = 0; row < $scope.n_rows; row++) {
+          var elem = document.getElementById(col + '-' + row);
+          elem.setAttribute('class', 'cell new') 
+        }
+      }
       setInterval($scope.nextGen, 100);
     }
 
@@ -77,7 +116,6 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
       $http.get(url).then(function(response) {
           $scope.canonical = response.data
           $scope.fromCanonical($scope.canonical);
-          console.log('ryder is a bich');
           //$scope.toBoard();
         }, function(response) {
           return $q.reject(response.data.error);
