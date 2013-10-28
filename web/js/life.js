@@ -16,22 +16,20 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
     $scope.getCol = function(col) {
       return $scope.map[col];
     }
+    
     $scope.getElem = function(col, row) {
       if ($scope.map[col][row] == ALIVE)
         return 'cell.gif';
       else
         return 'dead.jpg'; 
     }
-    $scope.getNumber = function(num) {
-      return new Array(num);   
-    }
-    $scope.double = function(value) { return value * 2; };
     
     $scope.toCanonical = function() {
       var canonical = $scope.n_columns + "," + $scope.n_rows + "|";
       for (var col = 0; col < $scope.n_columns; col++) {
         for (var row = 0; row < $scope.n_rows; row++) {
-          if ($scope.map[col][[row]] == ALIVE) {
+          //console.log($scope.map[col][row]);
+          if ($scope.map[col][row].alive == ALIVE) {
             canonical += col +',' + row + ',';
           }
         } 
@@ -48,76 +46,35 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
       $scope.alive = elems.split(',');
 
       // KILL OF ALIVE CELLS FROM PREV
-      //var map = Array($scope.n_columns);
-      // for (var col = 0; col < $scope.n_columns; col++) {
-      //   map[col] = new Array($scope.n_rows);
-      //   for (var row = 0; row < $scope.n_rows; row++) {
-      //       map[col][row] = DEAD;
-      //       var elem = document.getElementById(col + '-' + row); 
-      //       elem.setAttribute('class', 'cell dead');
-      //   }
-      // } 
-      var map = document.getElementById('map');
-      console.log(map);
-      var insertFunction = removeToInsertLater(map);
       for (var i=0; i< $scope.prev.length-1; i=i+2) {
         var col = parseInt($scope.prev[i]);
         var row = parseInt($scope.prev[i+1]);
-        //$scope.map[col][row] = DEAD;
-        var elem = map.querySelector('li[id="' + col + '-' + row + '"]'); 
-        elem.setAttribute('class', 'cell dead');
+        d3.select('#C'+ col + 'R' + row).attr("class", "cell dead");
       }
+
       //LOOP THROUGH THE COMPUTED ALIVE AND ADD THEM TO MAP
       for (var i=0; i<$scope.alive.length-1; i=i+2) {
         var col = parseInt($scope.alive[i]);
         var row = parseInt($scope.alive[i+1]);
-        //$scope.map[col][row] = ALIVE;
-        console.log('li[id="' + col + '-' + row + '"]');
-        var elem = map.querySelector('li[id="' + col + '-' + row + '"]');
-        elem.setAttribute('class', 'cell alive');
+        console.log('#C'+ col + 'R' + row);
+        d3.select('#C'+ col + 'R' + row).attr("class", "cell alive");
       }
-      console.log(map);
-      insertFunction();
-      $scope.prev = $scope.alive;
-      //$scope.n_columns = n_columns;
-      //$scope.n_rows = n_rows;
-      //$scope.map = map;
-    }
 
-  
-    /**
-     * Remove an element and provide a function that inserts it into its original position
-     * @param element {Element} The element to be temporarily removed
-     * @return {Function} A function that inserts the element into its original position
-     **/
-    function removeToInsertLater(element) {
-      var parentNode = element.parentNode;
-      var nextSibling = element.nextSibling;
-      parentNode.removeChild(element);
-      return function() {
-        if (nextSibling) {
-          parentNode.insertBefore(element, nextSibling);
-        } else {
-          parentNode.appendChild(element);
-        }
-      };
+      $scope.prev = $scope.alive;
+      $scope.map = map;
     }
 
     $scope.loop = function() {
-      //Reset the trail back to zero
-      for (var col = 0; col < $scope.n_columns; col++) {
-        for (var row = 0; row < $scope.n_rows; row++) {
-          var elem = document.getElementById(col + '-' + row);
-          elem.setAttribute('class', 'cell new') 
-        }
-      }
-      setInterval($scope.nextGen, 50);
+        window.setInterval($scope.nextGen, 100);
     }
 
     $scope.nextGen = function() {
       var url = "/next?state=" + $scope.canonical;
+      console.log('next gen');
       $http.get(url).then(function(response) {
+          console.log('setting canonical');
           $scope.canonical = response.data
+          console.log('from canonical');
           $scope.fromCanonical($scope.canonical);
           //$scope.toBoard();
         }, function(response) {
@@ -147,22 +104,80 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
       $scope.map = map;
       $scope.map_size = temp;
       $scope.canonical = $scope.toCanonical();
-      //$scope.toBoard();
     }
 
-    $scope.toBoard = function() {
-      console.log('starting');
-      var map = '<ul class="columns">'
-      for (var col = 0; col < $scope.n_columns; col++) {
-        map += '<li class="col"><ul>'
-        for (var row = 0; row < $scope.n_rows; row++) {
-          elem = $scope.getElem(col, row);
-          map += '<li class="cell"><img src="/static/images/'+ elem + '"></img></li>';
-        } 
-        map += '</ul></li>';
-      } 
-      map += '</ul>';
-      $scope.board = map;
+    $scope.generateGrid = function (id, width, height, n_columns, n_rows)
+    {
+        $scope.map = $scope.randomData(width, height, n_columns, n_rows);
+        $scope.n_columns = n_columns; 
+        $scope.n_rows = n_rows;
+        //console.log($scope.map);
+        var grid = d3.select(id).append("svg")
+                        .attr("width", width)
+                        .attr("height", height)
+                        .attr("class", "chart");
+
+        var row = grid.selectAll(".row")
+                      .data($scope.map)
+                    .enter().append("svg:g")
+                      .attr("class", "row");
+
+        var col = row.selectAll(".cell")
+                     .data(function (d) { return d; })
+                    .enter().append("svg:rect")
+                     .attr("class", "cell new")
+                     .attr("x", function(d) { return d.x; })
+                     .attr("y", function(d) { return d.y; })
+                     .attr("width", function(d) { return d.width; })
+                     .attr("height", function(d) { return d.height; })
+                     .attr("id", function(d) {return d.index; })
+        $scope.canonical = $scope.toCanonical();
+    }
+
+    $scope.randomData = function (gridWidth, gridHeight, n_columns, n_rows)
+    {
+        $scope.map = new Array();
+        var gridItemWidth = gridWidth / n_columns;
+        var gridItemHeight = gridHeight / n_rows;
+        var startX = gridItemWidth / 2;
+        var startY = gridItemHeight / 2;
+        var stepX = gridItemWidth;
+        var stepY = gridItemHeight;
+        var xpos = startX;
+        var ypos = startY;
+        var newValue = 0;
+        var count = 0;
+        var status = 0;
+
+        for (var index_a = 0; index_a < n_rows; index_a++)
+        {
+            $scope.map.push(new Array());
+            for (var index_b = 0; index_b < n_columns; index_b++)
+            {
+                newValue = Math.random();
+                if (newValue > 0.5) {
+                  status = ALIVE;
+                }
+                else {
+                  status = DEAD;
+                }
+                 $scope.map[index_a].push({ 
+                                    alive: status,
+                                    width: gridItemWidth,
+                                    height: gridItemHeight,
+                                    x: xpos,
+                                    y: ypos,
+                                    count: count,
+                                    index: 'C' + index_a + 'R' + index_b
+                                });
+                
+                xpos += stepX;
+                count += 1;
+            }
+            xpos = startX;
+            ypos += stepY;
+        }
+        return  $scope.map;
     }
 
 }]);
