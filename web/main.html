@@ -8,22 +8,22 @@
     <link rel="stylesheet" type="text/css" href="/static/css/map.css">
   </head>
   <body>
-    <span ng-controller="LifeCtrl">
-      <div class="main" ng-init="initMap(50, 50)" ng-click="loop();">
+    <span  ng-controller="LifeCtrl">
+      <div class="nav" ng-init="initMap(120, 100)" ng-click="loop();">
+        <div class="nav-cont">
+          <h1>A Game Of Life</h1>
+        </div>
       </div>
-      <div>
-        Two times <input ng-model="num"> equals {{ double(num) }}
+      <div id="map">
+        <ul class="columns">
+          <li class="col" ng-repeat="col in map_size">
+            <ul>
+              <li id="{{$parent.$index}}-{{$index}}" class="cell" ng-repeat="row in map_size[$index]">
+              </li>
+            </ul>
+          </li>
+        </ul>
       </div>
-
-      <ul class="columns">
-        <li class="col" ng-repeat="col in map_size">
-          <ul>
-            <li class="cell" ng-repeat="row in map_size[$index]">
-              <img id="{{$index}}-{{$parent.$index}}"></img>
-            </li>
-          </ul>
-        </li>
-      </ul>
     </span>
   </body>
 </html>
