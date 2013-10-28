@@ -55,14 +55,15 @@ h1 {
 }
 
 .cell.alive {
-  background-image:  url("/static/images/cell.gif")
+  /*background-image:  url("/static/images/cell.gif")*/
+  fill: red;
 }
 
 .cell.dead {
   /*background-image:  url("/static/images/dead.jpg")*/
-  background-color: #070D1B;
+  fill: #070D1B;
 }
 
 .cell.new {
-  background-color: #171C2A;
+  fill: gray;
 }
