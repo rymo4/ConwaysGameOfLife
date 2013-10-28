@@ -12,6 +12,7 @@ func TestCanonicalStringRoundtrip(t *testing.T) {
 	}
 
   runRoundtrip("3,3|0,0,", "3,3|", t)
+  runRoundtrip("3,3|", "3,3|", t)
   runRoundtrip("3,3|1,0,1,1,1,2,", "3,3|0,1,1,1,2,1,", t)
   runRoundtrip("3,3|0,1,1,1,2,1,", "3,3|1,0,1,1,1,2,", t)
 }
