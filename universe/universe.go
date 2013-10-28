@@ -107,6 +107,9 @@ func (u *Universe) Next() {
 			for x_ := -1; x_ < 2; x_++ {
 				y := y_ + yCenter
 				x := x_ + xCenter
+        if x < 0 || x >= u.Width || y < 0 || y > u.Height {
+          continue
+        }
 				live := u.IsLiving(y, x)
 				switch n := u.NeighborsCount(y, x); {
 				case live && n < 2:
