@@ -58,22 +58,25 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
       //   }
       // } 
       var map = document.getElementById('map');
+      console.log(map);
       var insertFunction = removeToInsertLater(map);
       for (var i=0; i< $scope.prev.length-1; i=i+2) {
         var col = parseInt($scope.prev[i]);
         var row = parseInt($scope.prev[i+1]);
-        $scope.map[col][row] = DEAD;
+        //$scope.map[col][row] = DEAD;
         var elem = map.querySelector('li[id="' + col + '-' + row + '"]'); 
-        elem.className = 'cell dead';
+        elem.setAttribute('class', 'cell dead');
       }
       //LOOP THROUGH THE COMPUTED ALIVE AND ADD THEM TO MAP
       for (var i=0; i<$scope.alive.length-1; i=i+2) {
         var col = parseInt($scope.alive[i]);
         var row = parseInt($scope.alive[i+1]);
-        $scope.map[col][row] = ALIVE;
+        //$scope.map[col][row] = ALIVE;
+        console.log('li[id="' + col + '-' + row + '"]');
         var elem = map.querySelector('li[id="' + col + '-' + row + '"]');
-        elem.className = 'cell alive';
+        elem.setAttribute('class', 'cell alive');
       }
+      console.log(map);
       insertFunction();
       $scope.prev = $scope.alive;
       //$scope.n_columns = n_columns;
@@ -108,7 +111,7 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
           elem.setAttribute('class', 'cell new') 
         }
       }
-      setInterval($scope.nextGen, 100);
+      setInterval($scope.nextGen, 50);
     }
 
     $scope.nextGen = function() {
