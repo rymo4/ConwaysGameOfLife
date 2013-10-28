@@ -11,9 +11,9 @@ func TestCanonicalStringRoundtrip(t *testing.T) {
 		t.Error("Size does not match")
 	}
 
-  runRoundtrip("3,2|0,0,", "3,2|", t)
+  runRoundtrip("3,3|0,0,", "3,3|", t)
   runRoundtrip("3,3|1,0,1,1,1,2,", "3,3|0,1,1,1,2,1,", t)
-
+  runRoundtrip("3,3|0,1,1,1,2,1,", "3,3|1,0,1,1,1,2,", t)
 }
 
 func runRoundtrip(first, answer string, t *testing.T) {
@@ -21,6 +21,6 @@ func runRoundtrip(first, answer string, t *testing.T) {
 	u.Next()
 	next := u.CanonicalString()
 	if next != answer {
-		t.Error("Canonical strings do not match: %s != %s", next, answer)
+		t.Errorf("Canonical strings do not match: %s != %s - initial: %s", next, answer, first)
 	}
 }
