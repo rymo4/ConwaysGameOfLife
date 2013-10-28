@@ -26,3 +26,11 @@
     position: relative;
   bottom: 4px;
 }
+
+.cell img.alive {
+  background-image:  url("/static/images/cell.gif")
+}
+
+.cell img.dead {
+  background-image:  url("/static/images/dead.jpg")
+}
