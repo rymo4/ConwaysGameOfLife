@@ -61,7 +61,7 @@ h1 {
 
 .cell.dead {
   /*background-image:  url("/static/images/dead.jpg")*/
-  fill: #070D1B;
+  /*fill: #070D1B;*/
 }
 
 .cell.new {
