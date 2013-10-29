@@ -62,8 +62,8 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
       var elems = t[1];
       $scope.alive = elems.split(',');
 
-      var cells = d3.select('.cell');
-      console.log(cells); 
+      //var cells = d3.select('.cell');
+      //console.log(cells); 
       // KILL OF ALIVE CELLS FROM PREV
       for (var i=0; i< $scope.prev.length-1; i=i+2) {
         var col = parseInt($scope.prev[i]);
@@ -99,7 +99,7 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
           $scope.canonical = response.data
           console.log('from canonical');
           $scope.fromCanonical($scope.canonical);
-          $scope.updateGrid('chart')
+          $scope.updateGrid('#chart')
           //$scope.toBoard();
         }, function(response) {
           return $q.reject(response.data.error);
@@ -146,19 +146,15 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
     }
 
     $scope.updateGrid = function(id) {
-      var grid = d3.select(id).append("svg")
-                      .attr("width", $scope.width)
-                      .attr("height", $scope.width)
-                      .attr("class", "chart");
+      console.log(id);
+      id = id + " svg";
+      var grid = d3.select('#world');
 
+      console.log(grid);
       var row = grid.selectAll(".row")
                     .data($scope.map)
-                  .enter().append("svg:g")
-                    .attr("class", "row");
-
-      var col = row.selectAll(".cell")
+                    .selectAll(".cell")
                    .data(function (d) { return d; })
-                  .enter().append("svg:rect")
                    .attr("class", "cell new")
                    .attr("x", function(d) { return d.x; })
                    .attr("y", function(d) { return d.y; })
@@ -177,7 +173,29 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
         $scope.n_rows = n_rows;
         $scope.width = width;
         $scope.height = height;
-        $scope.updateGrid(id);
+        var grid = d3.select(id).append("svg")
+                      .attr("width", $scope.width)
+                      .attr("height", $scope.width)
+                      .attr("class", "chart")
+                      .attr("id", "world");
+        console.log(grid);
+
+        var row = grid.selectAll(".row")
+                    .data($scope.map)
+                  .enter().append("svg:g")
+                    .attr("class", "row");
+
+        var col = row.selectAll(".cell")
+                   .data(function (d) { return d; })
+                  .enter().append("svg:rect")
+                   .attr("class", "cell new")
+                   .attr("x", function(d) { return d.x; })
+                   .attr("y", function(d) { return d.y; })
+                   .attr("width", function(d) { return d.width; })
+                   .attr("height", function(d) { return d.height; })
+                   .attr("id", function(d) {return d.index; })
+                   .attr("n_dead", function(d) { return d.n_dead; })
+                   .style("fill", function(d) {return $scope.color(d.col, d.row); })
         $scope.canonical = $scope.toCanonical();
     }
 
