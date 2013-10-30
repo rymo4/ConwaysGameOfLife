@@ -6,12 +6,14 @@ import (
 )
 
 type roundtrip struct {
-	Input  string
-	Answer string
+	Input    string
+	Answer   string
+	Toroidal bool
 }
 
 func (r *roundtrip) Check() (bool, string) {
 	u := universe.LoadFromString(r.Input)
+	u.Toroidal = r.Toroidal
 	u.Next()
 	return u.String() == r.Answer, u.String()
 }
@@ -38,5 +40,6 @@ func TestCanonicalStringRoundtrip(t *testing.T) {
 	tests = append(tests, roundtrip{Input: ".O.\n.O.\n.O.\n", Answer: "...\nOOO\n...\n"})
 	tests = append(tests, roundtrip{Input: "...\n...\n...\n", Answer: "...\n...\n...\n"})
 	tests = append(tests, roundtrip{Input: "..\n..\n..\n", Answer: "..\n..\n..\n"})
+	tests = append(tests, roundtrip{Input: ".OO.\n....\n.OO.\n", Answer: ".OO.\n....\n.OO.\n", Toroidal: true})
 	tests.Run(t)
 }

@@ -23,9 +23,20 @@ type Universe struct {
 	Space        grid
 	generation   int
 	initialState string
+	Toroidal     bool
 }
 
 func (u *Universe) IsLiving(y, x int) bool {
+	if y == 0 {
+		y = u.Height - 1
+	} else if y == u.Height {
+		y = 0
+	}
+	if x == 0 {
+		x = u.Width - 1
+	} else if x == u.Width {
+		x = 0
+	}
 	return u.Space[toKey(y, x)] == living
 }
 
@@ -71,8 +82,9 @@ func (u *Universe) NeighborsCount(y, x int) int {
 		for dy := -1; dy < 2; dy++ {
 			xx, yy := x+dx, y+dy
 			if (dx != 0 || dy != 0) &&
-				xx >= 0 && xx < u.Width &&
-				yy >= 0 && yy < u.Height && u.IsLiving(yy, xx) {
+				((!u.Toroidal && xx >= 0 && xx < u.Width && yy >= 0 && yy < u.Height) ||
+					u.Toroidal) &&
+				u.IsLiving(yy, xx) {
 				n++
 			}
 		}
