@@ -12,7 +12,7 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
     var ALIVE = 1;
     var DEAD = 0;
 
-    $scope.visited_colors = ['#EEE', '#CCC', '#AAA', '#888', '#666', '#444', '#222'];
+    $scope.visited_colors = ['#EEE', '#DDD', '#CCC', '#BBB', '#AAA', '#999', '#888', "#777" ,'#666', '#555','#444', '#333', '#222', '#111'];
 
 
     $scope.getCol = function(col) {
@@ -105,6 +105,20 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
           return $q.reject(response.data.error);
       });
 
+    }
+
+    $scope.selectMap = function(mapName) {
+      var url = "/maps?mapName=" + mapName;
+      console.log(mapName);
+      console.log(url);
+      $http.get(url).then(function(response) {
+          $scope.canonical = response.data
+          $scope.fromCanonical($scope.canonical);
+          $scope.updateGrid('#chart')
+          //$scope.toBoard();
+        }, function(response) {
+                return $q.reject(response.data.error);
+      });
     }
 
     function CellGrid(rows, columns) {
@@ -202,6 +216,7 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
     $scope.randomData = function (gridWidth, gridHeight, n_columns, n_rows)
     {
         $scope.map = new Array();
+        $scope.alive = new Array();
         var gridItemWidth = gridWidth / n_columns;
         var gridItemHeight = gridHeight / n_rows;
         var startX = gridItemWidth / 2;
@@ -220,8 +235,10 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
             for (var index_b = 0; index_b < n_rows; index_b++)
             {
                 newValue = Math.random();
-                if (newValue > 0.5) {
+                if (newValue > 0.7) {
                   status = ALIVE;
+                  $scope.alive.push(index_a);
+                  $scope.alive.push(index_b);
                 }
                 else {
                   status = DEAD;
@@ -245,6 +262,7 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
             xpos = startX;
             ypos += stepY;
         }
+        $scope.prev = $scope.alive;
         return  $scope.map;
     }
 
