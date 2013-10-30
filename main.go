@@ -19,6 +19,8 @@ const (
 // and j = row # for living cell
 func main() {
 	log.Print("Starting webserver.")
+	u, _ := universe.LoadFromFile("./maps/pulsar.txt")
+	log.Print(u)
 
 	// TODO: Take a state and output the next state
 	http.HandleFunc("/next", func(w http.ResponseWriter, r *http.Request) {

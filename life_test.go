@@ -5,23 +5,38 @@ import (
 	"testing"
 )
 
+type roundtrip struct {
+	Input  string
+	Answer string
+}
+
+func (r *roundtrip) Check() (bool, string) {
+	u := universe.LoadFromString(r.Input)
+	u.Next()
+	return u.String() == r.Answer, u.String()
+}
+
+type testsuite []roundtrip
+
+func (ts testsuite) Run(t *testing.T) {
+	for _, test := range ts {
+		ok, guess := test.Check()
+		if !ok {
+			t.Errorf("States do not match:\n%s\n%s\n Initial: %s", test.Answer, guess, test.Input)
+		}
+	}
+}
+
 func TestCanonicalStringRoundtrip(t *testing.T) {
 	u := universe.LoadFromCanonicalString("3,2|0,0,")
 	if u.Width != 3 || u.Height != 2 {
 		t.Error("Size does not match")
 	}
 
-  runRoundtrip("3,3|0,0,", "3,3|", t)
-  runRoundtrip("3,3|", "3,3|", t)
-  runRoundtrip("3,3|1,0,1,1,1,2,", "3,3|0,1,1,1,2,1,", t)
-  runRoundtrip("3,3|0,1,1,1,2,1,", "3,3|1,0,1,1,1,2,", t)
-}
-
-func runRoundtrip(first, answer string, t *testing.T) {
-	u := universe.LoadFromCanonicalString(first)
-	u.Next()
-	next := u.CanonicalString()
-	if next != answer {
-		t.Errorf("Canonical strings do not match: %s != %s - initial: %s", next, answer, first)
-	}
+	tests := make(testsuite, 0)
+	tests = append(tests, roundtrip{Input: "...\nOOO\n...\n", Answer: ".O.\n.O.\n.O.\n"})
+	tests = append(tests, roundtrip{Input: ".O.\n.O.\n.O.\n", Answer: "...\nOOO\n...\n"})
+	tests = append(tests, roundtrip{Input: "...\n...\n...\n", Answer: "...\n...\n...\n"})
+	tests = append(tests, roundtrip{Input: "..\n..\n..\n", Answer: "..\n..\n..\n"})
+	tests.Run(t)
 }

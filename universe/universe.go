@@ -2,6 +2,7 @@ package universe
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 	"strconv"
@@ -49,17 +50,20 @@ func CoordsFromKey(key string) (y, x int) {
 	return
 }
 
-//func (u *Universe) Show() {
-//	fmt.Print("\x0c")
-//	for _, r := range u.Space {
-//		for i, b := range r {
-//			if b == 0 {
-//				r[i] = dead
-//			}
-//		}
-//		fmt.Println(string(r[:]))
-//	}
-//}
+func (u *Universe) String() string {
+	var buffer bytes.Buffer
+	for y := 0; y < u.Height; y++ {
+		for x := 0; x < u.Width; x++ {
+			if u.IsLiving(y, x) {
+				buffer.WriteString(string(living))
+			} else {
+				buffer.WriteString(".")
+			}
+		}
+		buffer.WriteString("\n")
+	}
+	return buffer.String()
+}
 
 func (u *Universe) NeighborsCount(y, x int) int {
 	n := 0
@@ -107,9 +111,9 @@ func (u *Universe) Next() {
 			for x_ := -1; x_ < 2; x_++ {
 				y := y_ + yCenter
 				x := x_ + xCenter
-        if x < 0 || x >= u.Width || y < 0 || y >= u.Height {
-          continue
-        }
+				if x < 0 || x >= u.Width || y < 0 || y >= u.Height {
+					continue
+				}
 				live := u.IsLiving(y, x)
 				switch n := u.NeighborsCount(y, x); {
 				case live && n < 2:
@@ -130,17 +134,14 @@ func (u *Universe) Next() {
 	u.generation++
 }
 
-func LoadFromFile(path string) (u *Universe, err error) {
-	body, err := readLines(path)
-	if err != nil {
-		return nil, err
-	}
+func LoadFromString(str string) (u *Universe) {
+	str = strings.Trim(str, "\n ")
+	body := strings.Split(str, "\n")
 
 	rows := len(body)
 	cols := len(body[0])
 
 	u = &Universe{Width: cols, Height: rows, Space: make(grid)}
-
 	for i := range body {
 		for j, e := range body[i] {
 			if e != blankMarker {
@@ -148,7 +149,25 @@ func LoadFromFile(path string) (u *Universe, err error) {
 			}
 		}
 	}
-	return u, err
+	return u
+}
+
+func LoadFromFile(path string) (u *Universe, err error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	lines := ""
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		lines += scanner.Text()
+	}
+	if scanner.Err() != nil {
+		return nil, scanner.Err()
+	}
+	return LoadFromString(lines), nil
 }
 
 func LoadFromCanonicalString(state string) *Universe {
@@ -182,19 +201,4 @@ func (u *Universe) CanonicalString() string {
 		}
 	}
 	return state
-}
-
-func readLines(path string) ([]string, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	var lines []string
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-	return lines, scanner.Err()
 }
