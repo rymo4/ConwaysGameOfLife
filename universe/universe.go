@@ -174,7 +174,7 @@ func LoadFromFile(path string) (u *Universe, err error) {
 	lines := ""
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		lines += scanner.Text()
+		lines += scanner.Text() + "\n"
 	}
 	if scanner.Err() != nil {
 		return nil, scanner.Err()

@@ -5,26 +5,58 @@ import (
 	"testing"
 )
 
-type roundtrip struct {
-	Input    string
-	Answer   string
-	Toroidal bool
+// Possible data flows:
+// 1. CanonicalString to Universe
+// 2. Universe to CanonicalString
+// 3. MapString to Universe
+// 4. Universe to MapString
+// 5. File to Universe
+// Maybe later: 6. Universe to file
+// Tests must send data through all pathes
+
+//-------------------
+// MapString -> Universe -> next Universe -> MapString
+// Tests: 3, 4
+//-------------------
+type mapToNextMap struct {
+	Input, Answer string
+	Toroidal      bool
 }
 
-func (r *roundtrip) Check() (bool, string) {
-	u := universe.LoadFromString(r.Input)
-	u.Toroidal = r.Toroidal
+func (m mapToNextMap) Check() (bool, string) {
+	u := universe.LoadFromString(m.Input)
+	u.Toroidal = m.Toroidal
 	u.Next()
-	return u.String() == r.Answer, u.String()
+	message := "Answer:\n" + m.Answer + "\nGuess:\n" + u.String() + "\nInput:\n" + m.Input + "\n"
+	return u.String() == m.Answer, message
 }
 
-type testsuite []roundtrip
+//-------------------
+// CanonicalString -> Universe -> CanonicalString
+// Tests: 1, 2
+//-------------------
+type canonicalToCanonical struct {
+	Input, Answer string
+}
 
-func (ts testsuite) Run(t *testing.T) {
+func (c canonicalToCanonical) Check() (bool, string) {
+	u := universe.LoadFromCanonicalString(c.Input)
+	message := "Answer:\n" + c.Answer + "\nGuess:\n" + u.CanonicalString() + "\nInput:\n" + c.Input + "\n"
+	return u.CanonicalString() == c.Answer, message
+}
+
+///
+type testcase interface {
+	Check() (bool, string)
+}
+
+type testsuite []testcase
+
+func Run(t *testing.T, ts []testcase) {
 	for _, test := range ts {
-		ok, guess := test.Check()
+		ok, message := test.Check()
 		if !ok {
-			t.Errorf("States do not match:\n%s\n%s\n Initial: %s", test.Answer, guess, test.Input)
+			t.Errorf(message)
 		}
 	}
 }
@@ -35,11 +67,16 @@ func TestCanonicalStringRoundtrip(t *testing.T) {
 		t.Error("Size does not match")
 	}
 
-	tests := make(testsuite, 0)
-	tests = append(tests, roundtrip{Input: "...\nOOO\n...\n", Answer: ".O.\n.O.\n.O.\n"})
-	tests = append(tests, roundtrip{Input: ".O.\n.O.\n.O.\n", Answer: "...\nOOO\n...\n"})
-	tests = append(tests, roundtrip{Input: "...\n...\n...\n", Answer: "...\n...\n...\n"})
-	tests = append(tests, roundtrip{Input: "..\n..\n..\n", Answer: "..\n..\n..\n"})
-	tests = append(tests, roundtrip{Input: ".OO.\n....\n.OO.\n", Answer: ".OO.\n....\n.OO.\n", Toroidal: true})
-	tests.Run(t)
+	tests := []testcase{
+		mapToNextMap{Input: "...\nOOO\n...\n", Answer: ".O.\n.O.\n.O.\n"},
+		mapToNextMap{Input: ".O.\n.O.\n.O.\n", Answer: "...\nOOO\n...\n"},
+		mapToNextMap{Input: "...\n...\n...\n", Answer: "...\n...\n...\n"},
+		mapToNextMap{Input: "..\n..\n..\n", Answer: "..\n..\n..\n"},
+		mapToNextMap{Input: ".OO.\n....\n.OO.\n", Answer: ".OO.\n....\n.OO.\n", Toroidal: true},
+		mapToNextMap{Input: "O..O\n....\nO..O\n", Answer: "O..O\n....\nO..O\n", Toroidal: true},
+		mapToNextMap{Input: "O..O\n....\nO..O\n", Answer: "....\n....\n....\n", Toroidal: false},
+		canonicalToCanonical{Input: "3,2|0,0", Answer: "3,2|"},
+		canonicalToCanonical{Input: "3,2|1,0", Answer: "3,2|"},
+	}
+	Run(t, tests)
 }
