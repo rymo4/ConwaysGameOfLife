@@ -27,6 +27,10 @@ h1 {
   margin: 0px;
 }
 
+#chart {
+  display: inline-block;
+}
+
 .columns {
   padding-left: 0px;
   margin: 0px;
@@ -61,7 +65,7 @@ h1 {
 
 .cell.dead {
   /*background-image:  url("/static/images/dead.jpg")*/
-  fill: #070D1B;
+  /*fill: #070D1B;*/
 }
 
 .cell.new {

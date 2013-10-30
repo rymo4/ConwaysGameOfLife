@@ -31,12 +31,19 @@ func main() {
 		fmt.Fprintf(w, "%s\n", u.CanonicalString())
 	})
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		serveHTML(w, "./web/main.html")
-	})
+
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./web/"))))
-	http.Handle("/maps/", http.FileServer(http.Dir(".")))
+	http.HandleFunc("/maps", func(w http.ResponseWriter, r *http.Request) {
+    log.Print("Responding to ", r.URL.Path)
+    mapName := r.FormValue("mapName")
+    u, _ := universe.LoadFromFile("./maps/" + mapName + ".txt")
+    fmt.Fprintf(w, "%s\n", u.CanonicalString())
+  })
+
+  http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+    serveHTML(w, "./web/main.html")
+  })
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
