@@ -62,7 +62,7 @@ func Run(t *testing.T, ts []testcase) {
 }
 
 func TestCanonicalStringRoundtrip(t *testing.T) {
-	u := universe.LoadFromCanonicalString("3,2|0,0,")
+	u := universe.LoadFromCanonicalString("3,2,f|0,0,")
 	if u.Width != 3 || u.Height != 2 {
 		t.Error("Size does not match")
 	}
@@ -75,8 +75,8 @@ func TestCanonicalStringRoundtrip(t *testing.T) {
 		mapToNextMap{Input: ".OO.\n....\n.OO.\n", Answer: ".OO.\n....\n.OO.\n", Toroidal: true},
 		mapToNextMap{Input: "O..O\n....\nO..O\n", Answer: "O..O\n....\nO..O\n", Toroidal: true},
 		mapToNextMap{Input: "O..O\n....\nO..O\n", Answer: "....\n....\n....\n", Toroidal: false},
-		canonicalToCanonical{Input: "3,2|0,0", Answer: "3,2|"},
-		canonicalToCanonical{Input: "3,2|1,0", Answer: "3,2|"},
+		canonicalToCanonical{Input: "3,2,true|0,0", Answer: "3,2,true|"},
+		canonicalToCanonical{Input: "3,2,false|1,0", Answer: "3,2,false|"},
 	}
 	Run(t, tests)
 }

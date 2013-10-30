@@ -92,27 +92,28 @@ func (u *Universe) NeighborsCount(y, x int) int {
 	return n
 }
 
-func New(width, height int) *Universe {
+func New(width, height int, toroidal bool) *Universe {
 	return &Universe{
-		Width:  width,
-		Height: height,
-		Space:  make(grid),
+		Width:    width,
+		Height:   height,
+		Space:    make(grid),
+		Toroidal: toroidal,
 	}
 }
 
 func (self *Universe) Clone() Universe {
 	return Universe{
-		Width:  self.Width,
-		Height: self.Height,
-		Space:  make(grid),
+		Width:    self.Width,
+		Height:   self.Height,
+		Space:    make(grid),
+		Toroidal: self.Toroidal,
 	}
 }
 
-func (u *Universe) AtGeneration(gen int) {
+func (u *Universe) ToGeneration(gen int) {
 	for u.generation < gen {
 		u.Next()
 	}
-	//u.Show()
 }
 
 func (u *Universe) Next() {
@@ -190,8 +191,9 @@ func LoadFromCanonicalString(state string) *Universe {
 	//TODO: handle errors
 	width, _ := strconv.ParseInt(mapSize[0], 10, 0)
 	height, _ := strconv.ParseInt(mapSize[1], 10, 0)
+	toroidal, _ := strconv.ParseBool(mapSize[2])
 
-	uni := New(int(width), int(height))
+	uni := New(int(width), int(height), toroidal)
 	for i := 0; i < len(livingCells)/2; i++ {
 		xIndex := i * 2
 		yIndex := xIndex + 1
@@ -205,7 +207,7 @@ func LoadFromCanonicalString(state string) *Universe {
 }
 
 func (u *Universe) CanonicalString() string {
-	state := fmt.Sprintf("%d,%d|", u.Width, u.Height)
+	state := fmt.Sprintf("%d,%d,%t|", u.Width, u.Height, u.Toroidal)
 	for key := range u.Space {
 		i, j := CoordsFromKey(key)
 		if u.IsLiving(i, j) {
