@@ -17,7 +17,6 @@ import (
 //-------------------
 // MapString -> Universe -> next Universe -> MapString
 // Tests: 3, 4
-//-------------------
 type mapToNextMap struct {
 	Input, Answer string
 	Toroidal      bool
@@ -34,7 +33,6 @@ func (m mapToNextMap) Check() (bool, string) {
 //-------------------
 // CanonicalString -> Universe -> CanonicalString
 // Tests: 1, 2
-//-------------------
 type canonicalToCanonical struct {
 	Input, Answer string
 }
@@ -45,7 +43,8 @@ func (c canonicalToCanonical) Check() (bool, string) {
 	return u.CanonicalString() == c.Answer, message
 }
 
-///
+//-------------------
+// Test Cases
 type testcase interface {
 	Check() (bool, string)
 }
@@ -61,22 +60,42 @@ func Run(t *testing.T, ts []testcase) {
 	}
 }
 
-func TestCanonicalStringRoundtrip(t *testing.T) {
+//-------------------
+// The Tests
+func TestSize(t *testing.T) {
 	u := universe.LoadFromCanonicalString("3,2,f|0,0,")
 	if u.Width != 3 || u.Height != 2 {
 		t.Error("Size does not match")
 	}
+	u = universe.LoadFromString("..\n..\n..\n")
+	if u.Width != 2 || u.Height != 3 {
+		t.Error("Size does not match")
+	}
+}
 
+func TestToroid(t *testing.T) {
+	tests := []testcase{
+		mapToNextMap{Input: ".OO.\n....\n.OO.\n", Answer: ".OO.\n....\n.OO.\n", Toroidal: true},
+		mapToNextMap{Input: "O..O\n....\nO..O\n", Answer: "O..O\n....\nO..O\n", Toroidal: true},
+		mapToNextMap{Input: "O..O\n....\nO..O\n", Answer: "....\n....\n....\n", Toroidal: false},
+	}
+	Run(t, tests)
+}
+
+func TestCanonicalString(t *testing.T) {
+	tests := []testcase{
+		canonicalToCanonical{Input: "3,2,true|0,0", Answer: "3,2,true|"},
+		canonicalToCanonical{Input: "3,2,false|1,0", Answer: "3,2,false|"},
+	}
+	Run(t, tests)
+}
+
+func TestMaps(t *testing.T) {
 	tests := []testcase{
 		mapToNextMap{Input: "...\nOOO\n...\n", Answer: ".O.\n.O.\n.O.\n"},
 		mapToNextMap{Input: ".O.\n.O.\n.O.\n", Answer: "...\nOOO\n...\n"},
 		mapToNextMap{Input: "...\n...\n...\n", Answer: "...\n...\n...\n"},
 		mapToNextMap{Input: "..\n..\n..\n", Answer: "..\n..\n..\n"},
-		mapToNextMap{Input: ".OO.\n....\n.OO.\n", Answer: ".OO.\n....\n.OO.\n", Toroidal: true},
-		mapToNextMap{Input: "O..O\n....\nO..O\n", Answer: "O..O\n....\nO..O\n", Toroidal: true},
-		mapToNextMap{Input: "O..O\n....\nO..O\n", Answer: "....\n....\n....\n", Toroidal: false},
-		canonicalToCanonical{Input: "3,2,true|0,0", Answer: "3,2,true|"},
-		canonicalToCanonical{Input: "3,2,false|1,0", Answer: "3,2,false|"},
 	}
 	Run(t, tests)
 }
