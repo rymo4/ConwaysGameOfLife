@@ -27,12 +27,12 @@ type Universe struct {
 }
 
 func (u *Universe) IsLiving(y, x int) bool {
-	if y == 0 {
+	if y == -1 {
 		y = u.Height - 1
 	} else if y == u.Height {
 		y = 0
 	}
-	if x == 0 {
+	if x == -1 {
 		x = u.Width - 1
 	} else if x == u.Width {
 		x = 0

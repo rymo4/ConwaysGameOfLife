@@ -39,6 +39,7 @@ type canonicalToCanonical struct {
 
 func (c canonicalToCanonical) Check() (bool, string) {
 	u := universe.LoadFromCanonicalString(c.Input)
+	u.Next()
 	message := "Answer:\n" + c.Answer + "\nGuess:\n" + u.CanonicalString() + "\nInput:\n" + c.Input + "\n"
 	return u.CanonicalString() == c.Answer, message
 }
