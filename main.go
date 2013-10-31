@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/rymo4/life/universe"
 	"io"
@@ -32,6 +33,16 @@ func main() {
 		mapName := r.FormValue("mapName")
 		u, _ := universe.LoadFromFile("./maps/" + mapName + ".txt")
 		fmt.Fprintf(w, "%s\n", u.CanonicalString())
+	})
+
+	http.HandleFunc("/mapslist", func(w http.ResponseWriter, r *http.Request) {
+		files, _ := ioutil.ReadDir("maps")
+		filenames := make([]string, len(files))
+		for i, file := range files {
+			filenames[i] = file.Name()
+		}
+		b, _ := json.Marshal(filenames)
+		fmt.Fprintf(w, string(b))
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
