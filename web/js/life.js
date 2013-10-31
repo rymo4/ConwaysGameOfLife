@@ -5,6 +5,7 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
     $scope.map_size = Array(1);
     $scope.n_rows = 0;
     $scope.n_columns = 0;
+    $scope.toroidal = false;
     $scope.canonical = 0;
     $scope.board = "";
     $scope.alive = [];
@@ -27,7 +28,7 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
     }
     
     $scope.toCanonical = function() {
-      var canonical = $scope.n_columns + "," + $scope.n_rows + "|";
+      var canonical = $scope.n_columns + "," + $scope.n_rows + "," + $scope.toroidal + "|";
       for (var col = 0; col < $scope.n_columns; col++) {
         for (var row = 0; row < $scope.n_rows; row++) {
           //console.log($scope.map[col][row]);
@@ -59,6 +60,7 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
       var size = t[0].split(",");
       var n_columns = parseInt(size[0]);
       var n_rows = parseInt(size[1]);
+      $scope.toroidal = size[2] == "true";
       var elems = t[1];
       $scope.alive = elems.split(',');
 
@@ -80,6 +82,9 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
       for (var i=0; i<$scope.alive.length-1; i=i+2) {
         var col = parseInt($scope.alive[i]);
         var row = parseInt($scope.alive[i+1]);
+        console.log(col)
+        console.log($scope.map)
+        console.log($scope.map[col])
         $scope.map[col][row].alive = 1;
         //d3.select('#C'+ col + 'R' + row).attr("class", "cell alive");
       }

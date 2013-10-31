@@ -61,7 +61,7 @@ func Run(t *testing.T, ts []testcase) {
 }
 
 //-------------------
-// The Tests
+// Finally, the tests...
 func TestSize(t *testing.T) {
 	u := universe.LoadFromCanonicalString("3,2,f|0,0,")
 	if u.Width != 3 || u.Height != 2 {
