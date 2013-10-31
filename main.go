@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
 //// Protocol:
@@ -39,7 +40,8 @@ func main() {
 		files, _ := ioutil.ReadDir("maps")
 		filenames := make([]string, len(files))
 		for i, file := range files {
-			filenames[i] = file.Name()
+			parts := strings.Split(file.Name(), ".")
+			filenames[i] = parts[0]
 		}
 		b, _ := json.Marshal(filenames)
 		fmt.Fprintf(w, string(b))
