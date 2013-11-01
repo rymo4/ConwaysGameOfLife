@@ -1,5 +1,7 @@
 var app = angular.module('Conways',[]);
 
+var CELL_SIZE = 10;
+
 var Universe = {
   empty: function(height, width) {
     var map = new Array(height);
@@ -61,7 +63,11 @@ var Universe = {
       universe.cells[i] = universe.map[y][x];
     }
 
-    var svg = d3.select("body").append("svg").attr("width", 500).attr("height", 500);
+    var svg = d3.select("body")
+      .append("svg")
+      .attr("width", CELL_SIZE * universe.map[0].length)
+      .attr("height", CELL_SIZE * universe.map.length)
+      .attr("fill", "#fff");
     Universe.rects = svg.selectAll("rect")
       .data(universe.cells)
       .enter().append("rect");
@@ -69,10 +75,10 @@ var Universe = {
   },
   render: function(universe) {
     Universe.rects
-      .attr('x', function(d,i){ return i % universe.map[0].length * 10;})
-      .attr('y', function(d,i){ return i % universe.map.length * 10;})
-      .attr('width', 10)
-      .attr('height', 10)
+      .attr('x', function(d,i){ return i % universe.map[0].length * CELL_SIZE;})
+      .attr('y', function(d,i){ return i % universe.map.length * CELL_SIZE;})
+      .attr('width', CELL_SIZE)
+      .attr('height', CELL_SIZE)
       .attr('fill', function(d){
         if (d.alive) return 'red';
         return 'white';
@@ -111,6 +117,8 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
       var url = "/maps?mapName=" + mapName;
       $http.get(url).then(function(response) {
         $scope.universe = Universe.fromCanonical(response.data);
+
+        $('svg').remove();
         Universe.initRender($scope.universe);
       }, function(response) {
         return $q.reject(response.data.error);

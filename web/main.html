@@ -9,20 +9,19 @@
     <link rel="stylesheet" type="text/css" href="/static/css/map.css">
   </head>
   <body>
-    <span  ng-controller="LifeCtrl">
-      <div class="nav" ng-init="generateGrid('#chart', 900, 900, 100, 100)" ng-click="loop();">
+    <span ng-controller="LifeCtrl">
+      <div class="nav">
         <div class="nav-cont">
           <h1>A Game Of Life</h1>
         </div>
       </div>
 
-      <select>
-        <option ng-repeat="map in maps">{{map}}</option>
-      </select>
-      <div ng-click="selectMap('assortment');" class="menu">
-        <a > Go!</a>
+      <div>
+        <p ng-click="loop()"> Run! </p>
+        <ul>
+          <li ng-repeat="map in maps" ng-click="selectMap(map);">{{map}}</li>
+        </ul>
       </div>
-      <div id="chart"></div>
     </span>
   </body>
 </html>
