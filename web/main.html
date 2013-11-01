@@ -4,7 +4,7 @@
     <title>Game of Life</title>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.2/angular.min.js"></script>
-    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="/static/js/d3.v3.min.js" charset="utf-8"></script>
     <script src="/static/js/life.js"></script>
     <link rel="stylesheet" type="text/css" href="/static/css/map.css">
   </head>
@@ -14,7 +14,11 @@
         <div class="nav-cont">
           <h1>A Game Of Life</h1>
         </div>
-      </div>      
+      </div>
+
+      <select>
+        <option ng-repeat="map in maps">{{map}}</option>
+      </select>
       <div ng-click="selectMap('assortment');" class="menu">
         <a > Go!</a>
       </div>
