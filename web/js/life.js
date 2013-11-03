@@ -25,7 +25,7 @@ var Universe = {
     var width  = parseInt(info[0]);
     var height = parseInt(info[1]);
 
-    universe = Universe.empty(height, width);
+    var universe = Universe.empty(height, width);
     universe = Universe._addFromCanonical(universe, canonical);
     return universe;
   },
@@ -83,7 +83,7 @@ var Universe = {
         if (d.alive) return 'red';
         return 'white';
       });
-  }
+  },
 };
 
 app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q) {
@@ -100,7 +100,22 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
     ];
 
     $scope.loop = function() {
-        window.setInterval($scope.nextGen, 50);
+        //window.setInterval($scope.nextGen, 50);
+        $scope.runWebsocket();
+    }
+
+    $scope.runWebsocket = function() {
+      if (window["WebSocket"]) {
+        $scope.conn = new WebSocket("ws://localhost:8080/ws");
+        $scope.conn.onclose = function(e) {
+          alert("Connection closed.");
+        };
+        $scope.conn.onmessage = function(e) {
+          Universe.update($scope.universe, e.data);
+        };
+      } else {
+        alert("Your browser does not support WebSockets.");
+      }
     }
 
     $scope.nextGen = function() {

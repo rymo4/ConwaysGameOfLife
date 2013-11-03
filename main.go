@@ -9,7 +9,94 @@ import (
 	"log"
 	"net/http"
 	"strings"
+  "code.google.com/p/go.net/websocket"
+  "time"
 )
+
+type hub struct {
+    // Registered connections.
+    connections map[*connection]bool
+    // Inbound messages from the connections.
+    broadcast chan string
+    // Register requests from the connections.
+    register chan *connection
+    // Unregister requests from connections.
+    unregister chan *connection
+}
+
+var h = hub{
+    broadcast:   make(chan string),
+    register:    make(chan *connection),
+    unregister:  make(chan *connection),
+    connections: make(map[*connection]bool),
+}
+
+func (h *hub) run() {
+    for {
+        select {
+        case c := <-h.register:
+            h.connections[c] = true
+            log.Println("New Connection. Total: ", len(h.connections))
+        case c := <-h.unregister:
+            delete(h.connections, c)
+            close(c.send)
+        case m := <-h.broadcast:
+            for c := range h.connections {
+                select {
+                case c.send <- m:
+                default:
+                    delete(h.connections, c)
+                    close(c.send)
+                    go c.ws.Close()
+                }
+            }
+        }
+    }
+}
+
+type connection struct {
+    // The websocket connection.
+    ws *websocket.Conn
+    // Buffered channel of outbound messages.
+    send chan string
+}
+
+func (c *connection) reader() {
+    for {
+        var message string
+        err := websocket.Message.Receive(c.ws, &message)
+        if err != nil {
+            break
+        }
+        h.broadcast <- message
+    }
+    c.ws.Close()
+}
+
+func (c *connection) writer() {
+  ticker := time.NewTicker(100 * time.Millisecond)
+  log.Println("starting to write to clients")
+  u, _ := universe.LoadFromFile("maps/glider_gun.txt")
+  for _ = range ticker.C {
+    err := websocket.Message.Send(c.ws, u.CanonicalString())
+    if err != nil {
+      c.ws.Close()
+      break
+    }
+    u.Next()
+  }
+  log.Println("stopped")
+}
+
+func wsHandler(ws *websocket.Conn) {
+    log.Println("ws handler")
+    c := &connection{send: make(chan string, 256), ws: ws}
+    h.register <- c
+    log.Println("Registered")
+    defer func() { h.unregister <- c }()
+    c.writer()
+    //c.reader()
+}
 
 //// Protocol:
 // width,height, [t/f]|i1,j1,i2,j2....
@@ -36,6 +123,8 @@ func main() {
 		fmt.Fprintf(w, "%s\n", u.CanonicalString())
 	})
 
+    http.Handle("/ws", websocket.Handler(wsHandler))
+
 	http.HandleFunc("/mapslist", func(w http.ResponseWriter, r *http.Request) {
 		files, _ := ioutil.ReadDir("maps")
 		filenames := make([]string, len(files))
@@ -51,6 +140,7 @@ func main() {
 		serveHTML(w, "./web/main.html")
 	})
 
+  go h.run()
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
