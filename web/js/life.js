@@ -81,7 +81,20 @@ var Universe = {
       .attr('height', CELL_SIZE)
       .attr('fill', function(d){
         if (d.alive) return 'red';
-        return 'white';
+        else {
+          var colors = [
+          '#FFF', '#EEE', '#DDD', '#CCC', 
+          '#BBB', '#AAA', '#999', '#888', 
+          "#777",'#666', '#555', '#444', 
+          '#333','#222', '#111'];
+          if (d.n_dead < colors.length) {
+            color = colors[d.n_dead];
+          }
+          else {
+            color = colors[colors.length-1];
+          }
+          return color;
+        }
       });
   }
 };
@@ -91,13 +104,6 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
       $scope.maps = response.data;
       $scope.selectMap($scope.maps[0]);
     });
-
-    $scope.visited_colors = [
-      '#EEE', '#DDD', '#CCC', '#BBB',
-      '#AAA', '#999', '#888', "#777",
-      '#666', '#555', '#444', '#333',
-      '#222', '#111'
-    ];
 
     $scope.loop = function() {
         window.setInterval($scope.nextGen, 50);
