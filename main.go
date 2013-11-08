@@ -1,6 +1,7 @@
 package main
 
 import (
+	"code.google.com/p/go.net/websocket"
 	"encoding/json"
 	"fmt"
 	"github.com/rymo4/life/universe"
@@ -9,97 +10,90 @@ import (
 	"log"
 	"net/http"
 	"strings"
-  "code.google.com/p/go.net/websocket"
-  "time"
+	"time"
 )
 
 type hub struct {
-    // Registered connections.
-    connections map[*connection]bool
-    // Inbound messages from the connections.
-    broadcast chan string
-    // Register requests from the connections.
-    register chan *connection
-    // Unregister requests from connections.
-    unregister chan *connection
+	connections map[*connection]bool
+	register    chan *connection
+	unregister  chan *connection
 }
 
 var h = hub{
-    broadcast:   make(chan string),
-    register:    make(chan *connection),
-    unregister:  make(chan *connection),
-    connections: make(map[*connection]bool),
+	register:    make(chan *connection),
+	unregister:  make(chan *connection),
+	connections: make(map[*connection]bool),
 }
 
 func (h *hub) run() {
-    for {
-        select {
-        case c := <-h.register:
-            h.connections[c] = true
-            log.Println("New Connection. Total: ", len(h.connections))
-        case c := <-h.unregister:
-            delete(h.connections, c)
-            close(c.send)
-        case m := <-h.broadcast:
-            for c := range h.connections {
-                select {
-                case c.send <- m:
-                default:
-                    delete(h.connections, c)
-                    close(c.send)
-                    go c.ws.Close()
-                }
-            }
-        }
-    }
+	for {
+		select {
+		case c := <-h.register:
+			h.connections[c] = false
+			log.Println("New Connection. Total: ", len(h.connections))
+		case c := <-h.unregister:
+			delete(h.connections, c)
+			close(c.send)
+		}
+	}
 }
 
 type connection struct {
-    // The websocket connection.
-    ws *websocket.Conn
-    // Buffered channel of outbound messages.
-    send chan string
+	ws      *websocket.Conn
+	Initial string
+	send    chan string
 }
 
 func (c *connection) reader() {
-    for {
-        var message string
-        err := websocket.Message.Receive(c.ws, &message)
-        if err != nil {
-            break
-        }
-        h.broadcast <- message
-    }
-    c.ws.Close()
+	for {
+		var canonical string
+		err := websocket.Message.Receive(c.ws, &canonical)
+		if err != nil {
+			break
+		}
+		c.Initial = canonical
+		h.connections[c] = true
+	}
+	c.ws.Close()
 }
 
 func (c *connection) writer() {
-  ticker := time.NewTicker(100 * time.Millisecond)
-  log.Println("starting to write to clients")
-  u, _ := universe.LoadFromFile("maps/glider_gun.txt")
-  for _ = range ticker.C {
-    err := websocket.Message.Send(c.ws, u.CanonicalString())
-    if err != nil {
-      c.ws.Close()
-      break
-    }
-    u.Next()
-  }
-  log.Println("stopped")
+	ticker := time.NewTicker(100 * time.Millisecond)
+	log.Println("starting to write to clients")
+	var u *universe.Universe
+	for _ = range ticker.C {
+		if c.Initial == "" {
+			// Wait for a start state before sending the data at it
+			log.Print("No start state received")
+			continue
+		}
+		if h.connections[c] {
+			// use start state, then mark it to not be used again
+			h.connections[c] = false
+			u = universe.LoadFromCanonicalString(c.Initial)
+		}
+		err := websocket.Message.Send(c.ws, u.CanonicalString())
+		if err != nil {
+			c.ws.Close()
+			break
+		}
+		u.Next()
+	}
+	log.Println("stopped")
 }
 
 func wsHandler(ws *websocket.Conn) {
-    log.Println("ws handler")
-    c := &connection{send: make(chan string, 256), ws: ws}
-    h.register <- c
-    log.Println("Registered")
-    defer func() { h.unregister <- c }()
-    c.writer()
-    //c.reader()
+	log.Print("wsHandler")
+	c := &connection{send: make(chan string, 256), ws: ws}
+	h.register <- c
+	log.Println("Registered new connection")
+	defer func() { h.unregister <- c }()
+	go c.reader()
+	c.writer()
 }
 
 //// Protocol:
-// width,height, [t/f]|i1,j1,i2,j2....
+// width,height,[true/false]|i1,j1,i2,j2....
 // where i = col # for a living cell
 // and j = row # for living cell
 // t/f for toroidal or not
@@ -123,7 +117,7 @@ func main() {
 		fmt.Fprintf(w, "%s\n", u.CanonicalString())
 	})
 
-    http.Handle("/ws", websocket.Handler(wsHandler))
+	http.Handle("/stream", websocket.Handler(wsHandler))
 
 	http.HandleFunc("/mapslist", func(w http.ResponseWriter, r *http.Request) {
 		files, _ := ioutil.ReadDir("maps")
@@ -140,7 +134,7 @@ func main() {
 		serveHTML(w, "./web/main.html")
 	})
 
-  go h.run()
+	go h.run()
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 

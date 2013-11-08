@@ -106,16 +106,19 @@ app.controller('LifeCtrl', ['$scope', '$http', '$q', function($scope, $http, $q)
     });
 
     $scope.loop = function() {
-        //window.setInterval($scope.nextGen, 50);
-        $scope.runWebsocket();
+        $scope.runWebSocket();
     }
 
-    $scope.runWebsocket = function() {
+    $scope.runWebSocket = function() {
       if (window["WebSocket"]) {
-        $scope.conn = new WebSocket("ws://localhost:8080/ws");
+        $scope.conn = new WebSocket("ws://localhost:8080/stream");
         $scope.conn.onclose = function(e) {
           alert("Connection closed.");
         };
+        $scope.conn.onopen = function(e){
+          console.log($scope.universe.canonical);
+          $scope.conn.send($scope.universe.canonical);
+        }
         $scope.conn.onmessage = function(e) {
           Universe.update($scope.universe, e.data);
         };
